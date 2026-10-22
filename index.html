@@ -349,13 +349,13 @@ section{position:relative}
   .mac-stats{padding:4cqw;gap:1.6cqw;border-radius:2.4cqw}
   .mac-stats .micro{font-size:2.6cqw}
   .mac-count{font-size:16cqw}
-  .glass-cards{grid-template-columns:repeat(2,36cqw);gap:4cqw}
-  .lg{aspect-ratio:1;border-radius:4cqw;padding:4cqw}
+  .glass-cards{grid-template-columns:repeat(2,38cqw);gap:4cqw;align-content:start;padding-top:13cqw}
+  .lg{aspect-ratio:5/4;border-radius:4cqw;padding:4cqw}
   .lg .micro{font-size:2.6cqw}
   .lg b{font-size:3.8cqw}
-  .notes{left:6cqw;right:6cqw;width:auto;top:6cqw;gap:2.4cqw}
-  .note{grid-template-columns:8cqw 1fr auto;gap:3cqw;padding:3cqw;border-radius:4.4cqw}
-  .note-ico{width:8cqw;border-radius:2cqw;font-size:3.6cqw}
+  .notes{left:6cqw;right:6cqw;width:auto;top:4cqw;gap:1.8cqw}
+  .note{grid-template-columns:7cqw 1fr auto;gap:3cqw;padding:2.2cqw 3cqw;border-radius:4cqw}
+  .note-ico{width:7cqw;border-radius:1.8cqw;font-size:3.2cqw}
   .note b{font-size:3.4cqw}
   .note span{font-size:3cqw}
   .note time{font-size:2.4cqw}
@@ -432,8 +432,8 @@ section{position:relative}
 .me-glow{position:absolute;left:18%;right:18%;top:18%;bottom:12%;border-radius:50%;
   background:radial-gradient(circle,rgba(var(--glow-rgb),.38),transparent 65%);filter:blur(40px);transform:translateZ(-90px)}
 .me-img{
-  position:absolute;left:50%;bottom:0;height:99%;width:auto;max-width:none;pointer-events:none;user-select:none;
-  transform:translateX(-50%) translateZ(60px);
+  position:absolute;left:0;bottom:0;width:100%;height:auto;pointer-events:none;user-select:none;
+  transform:translateZ(60px); /* плечи упираются в края рамки, голова выходит над ней */
   -webkit-mask-image:linear-gradient(to bottom,#000 76%,transparent 99%);mask-image:linear-gradient(to bottom,#000 76%,transparent 99%);
   filter:drop-shadow(0 0 1.5px rgba(var(--glow-rgb),.55)) drop-shadow(0 30px 40px rgba(0,0,0,.6));
 }
@@ -815,7 +815,7 @@ footer{border-top:1px solid var(--line);padding:48px 0 32px}
         <div class="me-card">
           <div class="me-glow" aria-hidden="true"></div>
           <div class="me-frame" aria-hidden="true"></div>
-          <img class="me-img" src="team/me.webp" alt="Михаил, основатель СИГНУМ" width="1287" height="1400" loading="lazy">
+          <img class="me-img" src="team/me.webp" alt="Михаил, основатель СИГНУМ" width="1127" height="1190" loading="lazy">
         </div>
         <button type="button" class="me-hit" aria-expanded="false" aria-controls="album" aria-label="Показать любимый альбом"></button>
         <div class="album liquid" id="album">
@@ -1215,39 +1215,47 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { LineSegments2 } from 'three/addons/lines/LineSegments2.js';
+import { LineSegmentsGeometry } from 'three/addons/lines/LineSegmentsGeometry.js';
+import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
 
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const YELLOW = new THREE.Color('#FFD60A');
 const BG = new THREE.Color('#070707');
 
-function makeStage(host, {fov=40, bloom=[1.1,.6,.1]} = {}){
+function makeStage(host, {fov=40, bloom=[1.1,.6,.1], minPR=1} = {}){
   const renderer = new THREE.WebGLRenderer({antialias:true, powerPreference:'high-performance'});
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  // minPR > 1 — рендер с запасом разрешения (суперсэмплинг) даже на обычных экранах
+  renderer.setPixelRatio(Math.min(Math.max(devicePixelRatio, minPR), 2));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   host.appendChild(renderer.domElement);
   const scene = new THREE.Scene(); scene.background = BG;
   const camera = new THREE.PerspectiveCamera(fov, 1, .1, 100);
-  const composer = new EffectComposer(renderer);
+  // постобработка в буфере с MSAA: без него bloom-композер теряет сглаживание и края «рвутся»
+  const target = new THREE.WebGLRenderTarget(1, 1, {type:THREE.HalfFloatType, samples:4});
+  const composer = new EffectComposer(renderer, target);
   composer.addPass(new RenderPass(scene, camera));
   const bloomPass = new UnrealBloomPass(new THREE.Vector2(1,1), ...bloom);
   composer.addPass(bloomPass);
   composer.addPass(new OutputPass());
+  const onResize = [];
   const resize = () => {
     const w = host.clientWidth, h = host.clientHeight;
     renderer.setSize(w, h, false); composer.setSize(w, h);
     camera.aspect = w / h; camera.updateProjectionMatrix();
+    onResize.forEach(fn => fn(w, h));
   };
   new ResizeObserver(resize).observe(host); resize();
   // рендерим только когда сцена видна
   let visible = true;
   new IntersectionObserver(([e]) => visible = e.isIntersecting).observe(host);
-  return {renderer, scene, camera, composer, bloomPass, isVisible:() => visible};
+  return {renderer, scene, camera, composer, bloomPass, onResize, resize, isVisible:() => visible};
 }
 
 try {
   // ===== HERO =====
   const heroHost = document.getElementById('heroCanvas');
-  const H = makeStage(heroHost, {fov:35, bloom:[.8,.5,.1]});
+  const H = makeStage(heroHost, {fov:35, bloom:[.55,.32,.18], minPR:1.5});
   H.scene.background = BG;
   H.camera.position.set(0, 0, 9);
 
@@ -1258,26 +1266,32 @@ try {
   // тёмные глянцевые грани
   const faces = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({color:0x0b0b0b, metalness:.85, roughness:.35, emissive:YELLOW, emissiveIntensity:.025, flatShading:true}));
   group.add(faces);
-  // светящиеся рёбра
-  const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineBasicMaterial({color:YELLOW.clone().multiplyScalar(1.5)}));
+  // светящиеся рёбра: «толстые» сглаженные линии вместо однопиксельных WebGL-линий
+  const edgeMat = new LineMaterial({color:YELLOW.clone().multiplyScalar(1.5), linewidth:1.6, alphaToCoverage:true});
+  H.onResize.push((w, h) => edgeMat.resolution.set(w, h)); H.resize();
+  const edges = new LineSegments2(new LineSegmentsGeometry().fromEdgesGeometry(new THREE.EdgesGeometry(geo)), edgeMat);
   group.add(edges);
-  // узлы в вершинах
+  // узлы в вершинах — круглые сферы, а не квадратные точки
   const pos = geo.attributes.position, seen = new Set(), pts = [];
   for (let i = 0; i < pos.count; i++){
     const k = [pos.getX(i),pos.getY(i),pos.getZ(i)].map(v => v.toFixed(3)).join();
-    if (!seen.has(k)){ seen.add(k); pts.push(pos.getX(i),pos.getY(i),pos.getZ(i)); }
+    if (!seen.has(k)){ seen.add(k); pts.push(new THREE.Vector3(pos.getX(i),pos.getY(i),pos.getZ(i))); }
   }
-  const nodeGeo = new THREE.BufferGeometry(); nodeGeo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
-  group.add(new THREE.Points(nodeGeo, new THREE.PointsMaterial({color:YELLOW.clone().multiplyScalar(3), size:.09})));
+  const vertNodes = new THREE.InstancedMesh(new THREE.SphereGeometry(.045, 16, 12), new THREE.MeshBasicMaterial({color:YELLOW.clone().multiplyScalar(2.6)}), pts.length);
+  pts.forEach((p, i) => vertNodes.setMatrixAt(i, new THREE.Matrix4().makeTranslation(p.x, p.y, p.z)));
+  group.add(vertNodes);
+  // невидимая сфера для наведения курсора
+  const hitSphere = new THREE.Mesh(new THREE.SphereGeometry(2.35, 16, 12), new THREE.MeshBasicMaterial({visible:false}));
+  group.add(hitSphere);
   // нимб: два наклонных кольца-орбиты со «спутниками», чтобы вращение читалось глазом
   const halo = new THREE.Group(); H.scene.add(halo);
   const orbit = (r, tiltX, tiltZ, k, sats) => {
     const pivot = new THREE.Group(); pivot.rotation.set(tiltX, 0, tiltZ);
     const spin = new THREE.Group(); pivot.add(spin);
-    spin.add(new THREE.Mesh(new THREE.TorusGeometry(r, .008, 8, 220), new THREE.MeshBasicMaterial({color:YELLOW.clone().multiplyScalar(k)})));
+    spin.add(new THREE.Mesh(new THREE.TorusGeometry(r, .011, 12, 360), new THREE.MeshBasicMaterial({color:YELLOW.clone().multiplyScalar(k)})));
     for (let i = 0; i < sats; i++){
       const a = i / sats * Math.PI * 2;
-      const s = new THREE.Mesh(new THREE.SphereGeometry(.05, 12, 12), new THREE.MeshBasicMaterial({color:YELLOW.clone().multiplyScalar(3)}));
+      const s = new THREE.Mesh(new THREE.SphereGeometry(.055, 24, 16), new THREE.MeshBasicMaterial({color:YELLOW.clone().multiplyScalar(2.6)}));
       s.position.set(Math.cos(a) * r, Math.sin(a) * r, 0); spin.add(s);
     }
     halo.add(pivot); return spin;
@@ -1305,6 +1319,23 @@ try {
 
   const mouse = {x:0, y:0};
   if (!reduce) addEventListener('pointermove', e => { mouse.x = e.clientX / innerWidth - .5; mouse.y = e.clientY / innerHeight - .5; }, {passive:true});
+
+  // наведение на сферу (или палец на ней) — вращение плавно разворачивается в обратную сторону
+  const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+  let overSphere = false, spinDir = 1;
+  const onSphere = (x, y) => {
+    const r = heroHost.getBoundingClientRect();
+    if (y < r.top || y > r.bottom) return false;
+    ndc.set((x - r.left) / r.width * 2 - 1, -((y - r.top) / r.height) * 2 + 1);
+    ray.setFromCamera(ndc, H.camera);
+    return ray.intersectObject(hitSphere).length > 0;
+  };
+  const setOver = v => { overSphere = v; heroHost.parentElement.style.cursor = v ? 'pointer' : ''; };
+  addEventListener('pointermove', e => { if (e.pointerType === 'mouse') setOver(onSphere(e.clientX, e.clientY)); }, {passive:true});
+  addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') setOver(onSphere(e.clientX, e.clientY)); }, {passive:true});
+  addEventListener('pointerup', e => { if (e.pointerType !== 'mouse') setOver(false); });
+  addEventListener('pointercancel', () => setOver(false));
+  document.documentElement.addEventListener('mouseleave', () => setOver(false));
 
   // ===== CITY: макет города, связанный паутиной =====
   const cityHost = document.getElementById('cityCanvas');
@@ -1422,10 +1453,12 @@ try {
     if (H.isVisible()){
       // медленное вращение в покое (при reduced-motion — вдвое медленнее)
       const sp = reduce ? .5 : 1;
-      group.rotation.y += .12 * sp * dt;
-      ring.rotation.z += .16 * sp * dt;
-      ring2.rotation.z -= .09 * sp * dt;
-      halo.rotation.y += .05 * sp * dt;
+      // под курсором — обратно и чуть быстрее; смена направления плавная, без рывка
+      spinDir += ((overSphere ? -2.2 : 1) - spinDir) * Math.min(1, dt * 2.5);
+      group.rotation.y += .12 * sp * dt * spinDir;
+      ring.rotation.z += .16 * sp * dt * spinDir;
+      ring2.rotation.z -= .09 * sp * dt * spinDir;
+      halo.rotation.y += .05 * sp * dt * spinDir;
       // параллакс при скролле: объект поднимается медленнее текста и чуть отдаляется
       const p = Math.min(scrollY / innerHeight, 1.2);
       group.position.y = halo.position.y = heroBase.y + p * 1.6;
@@ -1433,7 +1466,7 @@ try {
       if (!reduce){
         group.rotation.x += (mouse.y * .5 + p * .6 - group.rotation.x) * .04;
         group.rotation.z += (-mouse.x * .3 - group.rotation.z) * .04;
-        H.bloomPass.strength = .8 + Math.sin(t * .9) * .15; // пульсация свечения
+        H.bloomPass.strength = .55 + Math.sin(t * .9) * .1; // пульсация свечения
       } else {
         group.rotation.x = p * .3;
       }
