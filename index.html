@@ -44,7 +44,7 @@
   --f-body:"Manrope","Golos Text",system-ui,sans-serif;
   --f-mono:"JetBrains Mono",ui-monospace,monospace;
 
-  --fs-display-xl:clamp(30px,8vw,108px); /* Unbounded широкий: «ПРОДВИЖЕНИЕ» ≈ 10.5em */
+  --fs-display-xl:clamp(28px,7.5vw,100px); /* Unbounded широкий: «ПРОДВИЖЕНИЕ» ≈ 10.5em, оставляем ~7% на растяжение */
   --fs-display-l:clamp(32px,5.4vw,84px);
   --fs-display-m:clamp(22px,2.6vw,40px);
   --fs-body-l:clamp(17px,1.4vw,20px);
@@ -107,7 +107,7 @@ section{position:relative}
   background:var(--glass-bg);border:var(--glass-border);
   backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);
 }
-.nav-links a{padding:8px 16px;border-radius:999px;font-size:14px;color:var(--text-300);transition:color .3s,background .3s}
+.nav-links a{padding:8px 14px;border-radius:999px;font-size:14px;white-space:nowrap;color:var(--text-300);transition:color .3s,background .3s}
 .nav-links a:hover{color:var(--text-100);background:rgba(255,255,255,.06)}
 
 /* ---------- BUTTONS ---------- */
@@ -145,6 +145,8 @@ section{position:relative}
 .hero h1 .line{display:block;overflow:hidden;padding-bottom:.04em}
 .hero h1 .line>span{display:inline-block}
 .hero .neon-word{animation:flicker 7s ease-in-out infinite}
+/* при наведении строка растягивается в ширину, но не дальше колонки (коэффициент считает JS) */
+.hero h1 .line{transform-origin:0 50%}
 @keyframes flicker{
   0%,100%{text-shadow:var(--neon-text)}
   45%{text-shadow:0 0 8px rgba(var(--glow-rgb),.7),0 0 16px rgba(var(--glow-rgb),.4),0 0 30px rgba(var(--glow-rgb),.25)}
@@ -228,6 +230,141 @@ section{position:relative}
 .chart-meta .live::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent)}
 .chart-axis{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 24px;padding:16px 24px;border-top:1px solid var(--line)}
 
+/* ---------- FILM (моушен-ролик с субтитрами) ---------- */
+.film{
+  container-type:inline-size;position:relative;aspect-ratio:16/9;border-radius:24px;overflow:hidden;isolation:isolate;
+  background:var(--ink-950);border:1px solid var(--line);
+}
+.film .blob{position:absolute;width:42cqw;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(var(--glow-rgb),.55),transparent 65%);filter:blur(5cqw);opacity:.4;pointer-events:none}
+.film .b1{left:-8cqw;top:-14cqw}
+.film .b2{right:-10cqw;bottom:-18cqw;opacity:.3}
+.film .b3{left:35cqw;top:20cqw;width:30cqw;opacity:.15}
+.film[data-state="playing"] .blob{animation:drift 9s ease-in-out infinite alternate}
+.film[data-state="playing"] .b2{animation-duration:11s;animation-direction:alternate-reverse}
+@keyframes drift{to{transform:translate(8cqw,5cqw) scale(1.15)}}
+.film .scene{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none;opacity:0;visibility:hidden}
+.film .logo-big{font-family:var(--f-display);font-weight:800;font-size:9cqw;line-height:1;color:var(--accent);letter-spacing:.02em;
+  text-shadow:0 0 1cqw rgba(var(--glow-rgb),.85),0 0 2cqw rgba(var(--glow-rgb),.5),0 0 4cqw rgba(var(--glow-rgb),.3)}
+.film .s1-line{margin:2.4cqw 0 0;font-family:var(--f-display);font-weight:700;font-size:2.6cqw;line-height:1.25;text-transform:uppercase;color:var(--text-100)}
+.film .s1-line span{display:block}
+.film .s5 p{margin:2cqw 0 0;font-family:var(--f-display);font-weight:700;font-size:2.4cqw;text-transform:uppercase;color:var(--text-100)}
+.film .s5 .btn{height:4.6cqw;font-size:1.15cqw;padding:0 .6cqw 0 2cqw;margin-top:2.6cqw;gap:1cqw}
+.film .s5 .btn .arr{width:3.4cqw;height:3.4cqw}
+.film .s5.live{pointer-events:auto}
+
+/* окно браузера macOS */
+.mac{
+  position:absolute;left:50%;top:52%;width:62cqw;aspect-ratio:16/10;border-radius:1.4cqw;overflow:hidden;opacity:0;visibility:hidden;
+  background:rgba(18,18,18,.78);border:1px solid rgba(255,255,255,.14);
+  backdrop-filter:blur(2cqw) saturate(140%);-webkit-backdrop-filter:blur(2cqw) saturate(140%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 4cqw 8cqw rgba(0,0,0,.6);
+}
+.mac-bar{height:3.6cqw;display:flex;align-items:center;gap:.7cqw;padding:0 1.2cqw;border-bottom:1px solid var(--line);background:rgba(255,255,255,.04)}
+.mac-bar i{width:1cqw;aspect-ratio:1;border-radius:50%;flex:none}
+.mac-bar i:nth-child(1){background:#ff5f57}.mac-bar i:nth-child(2){background:#febc2e}.mac-bar i:nth-child(3){background:#28c840}
+.mac-url{flex:0 1 40%;margin:0 auto;height:2.2cqw;border-radius:.6cqw;background:rgba(255,255,255,.06);font-family:var(--f-mono);font-size:1.1cqw;color:var(--text-300);display:grid;place-items:center;transform:translateX(-2cqw)}
+.mac-body{display:grid;grid-template-columns:1.3fr 1fr;gap:2cqw;padding:2.4cqw;height:calc(100% - 3.6cqw)}
+.mac-site b{display:block;height:1.4cqw;width:80%;border-radius:.4cqw;background:rgba(255,255,255,.08);margin-bottom:1cqw}
+.mac-site b.short{width:50%}
+.mac-hero{height:13cqw;border-radius:1cqw;margin-top:1.6cqw;background:linear-gradient(135deg,rgba(255,255,255,.07),rgba(255,255,255,.02));border:1px solid var(--line)}
+.mac-stats{border-radius:1cqw;border:1px solid var(--line);padding:1.6cqw;display:flex;flex-direction:column;gap:.6cqw;transition:border-color .6s}
+.mac-stats.on{border-color:rgba(var(--glow-rgb),.5)}
+.mac-stats .micro{font-size:1cqw}
+.mac-count{font-family:var(--f-display);font-weight:800;font-size:6cqw;line-height:1;color:var(--text-100);transition:color .4s,text-shadow .4s}
+.mac-count.hot{color:var(--accent);text-shadow:0 0 1cqw rgba(var(--glow-rgb),.7),0 0 2.4cqw rgba(var(--glow-rgb),.35)}
+.mac-chart{width:100%;margin-top:auto;overflow:visible}
+.mac-chart path{fill:none;stroke-linecap:round}
+.mac-chart .flat{stroke:rgba(255,255,255,.25);stroke-width:1.5}
+.mac-chart .grow{stroke:var(--accent);stroke-width:2.5;filter:drop-shadow(0 0 4px rgba(var(--glow-rgb),.8))}
+
+/* жидкое стекло */
+.liquid{
+  position:relative;overflow:hidden;
+  background:linear-gradient(135deg,rgba(255,255,255,.18),rgba(255,255,255,.04));
+  backdrop-filter:blur(1.6cqw) saturate(180%);-webkit-backdrop-filter:blur(1.6cqw) saturate(180%);
+  border:1px solid rgba(255,255,255,.24);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5),inset 0 -1px 0 rgba(255,255,255,.08),inset 0 0 2cqw rgba(255,255,255,.05),0 2cqw 5cqw rgba(0,0,0,.5);
+}
+.liquid::before{content:"";position:absolute;inset:-50%;pointer-events:none;
+  background:linear-gradient(115deg,transparent 42%,rgba(255,255,255,.26) 50%,transparent 58%);transform:translateX(-60%)}
+.film[data-state="playing"] .liquid::before{animation:sheen 3.4s ease-in-out infinite}
+@keyframes sheen{0%{transform:translateX(-60%)}60%,100%{transform:translateX(60%)}}
+.glass-cards{position:absolute;inset:0;display:grid;grid-template-columns:repeat(4,18cqw);gap:2cqw;justify-content:center;align-content:center;pointer-events:none;perspective:1200px}
+.lg{aspect-ratio:3/4;border-radius:2.2cqw;padding:2cqw;display:flex;flex-direction:column;justify-content:space-between;opacity:0;visibility:hidden}
+.lg .micro{font-size:1cqw;color:var(--text-300)}
+.lg b{font-family:var(--f-display);font-weight:700;font-size:1.6cqw;line-height:1.15;text-transform:uppercase;color:var(--text-100)}
+.lg.acc{background:linear-gradient(135deg,rgba(255,214,10,.92),rgba(255,184,0,.78));border-color:rgba(255,240,170,.7);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 0 1.4cqw rgba(var(--glow-rgb),.55),0 0 4cqw rgba(var(--glow-rgb),.3)}
+.lg.acc b,.lg.acc .micro{color:var(--on-accent)}
+/* уведомления как на iPhone */
+.notes{position:absolute;top:4cqw;right:4cqw;width:30cqw;display:grid;gap:1cqw;pointer-events:none}
+.note{display:grid;grid-template-columns:3.4cqw 1fr auto;gap:1.2cqw;align-items:center;padding:1.2cqw 1.4cqw;border-radius:2cqw;opacity:0;visibility:hidden}
+.note-ico{width:3.4cqw;aspect-ratio:1;border-radius:.9cqw;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;font-family:var(--f-display);font-weight:800;font-size:1.6cqw}
+.note b{display:block;font-weight:600;font-size:1.25cqw;color:var(--text-100);line-height:1.3}
+.note span{display:block;font-size:1.1cqw;color:var(--text-300);line-height:1.3}
+.note time{font-family:var(--f-mono);font-size:.95cqw;color:var(--text-500);align-self:start}
+
+/* субтитры, обложка, управление */
+.film-sub{position:absolute;left:50%;bottom:7.5cqw;transform:translateX(-50%);z-index:5;margin:0;max-width:72cqw;width:max-content;text-align:center;
+  font-weight:500;font-size:1.5cqw;line-height:1.4;color:var(--text-100);padding:.7cqw 1.6cqw;border-radius:1cqw;
+  background:rgba(0,0,0,.55);backdrop-filter:blur(1cqw);-webkit-backdrop-filter:blur(1cqw);opacity:0;visibility:hidden}
+.film-ui{position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2cqw;
+  background:radial-gradient(circle,transparent 30%,rgba(0,0,0,.45));transition:opacity .4s}
+.film-title{font-family:var(--f-display);font-weight:800;font-size:3.4cqw;text-transform:uppercase;color:var(--text-100);text-align:center;line-height:1.05}
+.film-play{width:max(64px,9cqw);aspect-ratio:1;border-radius:50%;border:0;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;
+  box-shadow:var(--neon-box);transition:transform .4s var(--ease),box-shadow .4s}
+.film-play:hover{transform:scale(1.06);box-shadow:0 0 14px rgba(var(--glow-rgb),.75),0 0 32px rgba(var(--glow-rgb),.5),0 0 60px rgba(var(--glow-rgb),.3)}
+.film-play svg{width:34%;margin-left:6%}
+.film-hint{font-size:max(11px,1.1cqw)}
+.film[data-state="playing"] .film-ui,.film[data-state="paused"] .film-ui{opacity:0;pointer-events:none}
+.film[data-state="ended"] .film-ui{inset:3cqw 3cqw auto auto;flex-direction:row;gap:1.2cqw;background:none}
+.film[data-state="ended"] .film-title{display:none}
+.film[data-state="ended"] .film-play{width:max(44px,4.6cqw)}
+.film-ctrl{position:absolute;left:2cqw;right:2cqw;bottom:2cqw;z-index:6;display:flex;align-items:center;gap:1.2cqw;opacity:0;visibility:hidden;transition:opacity .4s,visibility .4s}
+.film[data-state="playing"] .film-ctrl,.film[data-state="paused"] .film-ctrl{opacity:1;visibility:visible}
+.film-ctrl button{width:max(36px,3.6cqw);aspect-ratio:1;border-radius:50%;display:grid;place-items:center;color:var(--text-100);
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.film-ctrl button svg{width:42%}
+.film-ctrl button:hover{border-color:var(--accent);color:var(--accent)}
+.film-ctrl .i-play,.film[data-state="paused"] .film-ctrl .i-pause{display:none}
+.film[data-state="paused"] .film-ctrl .i-play{display:block}
+.film-prog{flex:1;height:3px;border-radius:3px;background:rgba(255,255,255,.15);overflow:hidden}
+.film-prog i{display:block;height:100%;width:0;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+.film button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+@media (max-width:560px){
+  .film{aspect-ratio:4/5}
+  .film .blob{width:80cqw}
+  .film .logo-big{font-size:15cqw}
+  .film .s1-line{font-size:4.6cqw;margin-top:4cqw}
+  .film .s5 p{font-size:4.6cqw;margin-top:3cqw}
+  .film .s5 .btn{height:11cqw;font-size:3cqw;padding:0 1.6cqw 0 5cqw;margin-top:5cqw;gap:2.4cqw}
+  .film .s5 .btn .arr{width:8cqw;height:8cqw}
+  .mac{width:86cqw;aspect-ratio:4/3;top:50%;border-radius:3cqw}
+  .mac-bar{height:8cqw;gap:1.6cqw;padding:0 3cqw}
+  .mac-bar i{width:2.2cqw}
+  .mac-url{height:4.8cqw;font-size:2.6cqw;border-radius:1.4cqw;flex-basis:55%}
+  .mac-body{grid-template-columns:1fr;padding:4cqw;height:calc(100% - 8cqw)}
+  .mac-site{display:none}
+  .mac-stats{padding:4cqw;gap:1.6cqw;border-radius:2.4cqw}
+  .mac-stats .micro{font-size:2.6cqw}
+  .mac-count{font-size:16cqw}
+  .glass-cards{grid-template-columns:repeat(2,36cqw);gap:4cqw}
+  .lg{aspect-ratio:1;border-radius:4cqw;padding:4cqw}
+  .lg .micro{font-size:2.6cqw}
+  .lg b{font-size:3.8cqw}
+  .notes{left:6cqw;right:6cqw;width:auto;top:6cqw;gap:2.4cqw}
+  .note{grid-template-columns:8cqw 1fr auto;gap:3cqw;padding:3cqw;border-radius:4.4cqw}
+  .note-ico{width:8cqw;border-radius:2cqw;font-size:3.6cqw}
+  .note b{font-size:3.4cqw}
+  .note span{font-size:3cqw}
+  .note time{font-size:2.4cqw}
+  .film-sub{font-size:3.6cqw;bottom:16cqw;max-width:88cqw;padding:1.6cqw 3cqw;border-radius:2.4cqw}
+  .film-title{font-size:6.4cqw;padding:0 6cqw}
+  .film-hint{font-size:11px}
+  .film-ctrl{left:4cqw;right:4cqw;bottom:4cqw;gap:3cqw}
+}
+
 /* ---------- SERVICES ---------- */
 .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
 .card{
@@ -266,6 +403,62 @@ section{position:relative}
 }
 .statement h2{font-size:var(--fs-display-l);max-width:1100px;position:relative}
 .statement h2 .dim{color:var(--text-700)}
+
+/* ---------- TEAM ---------- */
+.team-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+.team-info h2{font-size:var(--fs-display-l);margin-top:20px}
+.team-name{margin:32px 0 0;font-family:var(--f-display);font-weight:700;font-size:clamp(26px,2.6vw,36px);line-height:1.1;text-transform:uppercase;color:var(--text-100)}
+.team-role{margin:10px 0 0;font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.team-bio{margin:16px 0 0;max-width:520px;font-size:var(--fs-body-l)}
+.team-stats{display:grid;grid-template-columns:1fr 1fr;margin-top:40px;border-top:1px solid var(--line)}
+.team-stats div{padding:24px 24px 0 0}
+.team-stats div+div{padding-left:24px;border-left:1px solid var(--line)}
+.team-stats b{display:block;font-family:var(--f-display);font-weight:800;font-size:clamp(40px,5vw,72px);line-height:1;color:var(--text-100);letter-spacing:-.03em}
+.team-stats b small{font-size:.32em;letter-spacing:0;margin-left:.3em;font-weight:700;vertical-align:.15em}
+.team-stats p{margin:12px 0 0;font-size:15px}
+.team-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:32px}
+.team-tags span{font-family:var(--f-mono);font-size:11px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);color:var(--text-500);text-transform:uppercase;letter-spacing:.06em}
+
+.me{position:relative;justify-self:center;width:min(100%,500px);aspect-ratio:1/1.1;perspective:1400px}
+.me-card{position:absolute;inset:0;z-index:2;transform-style:preserve-3d;will-change:transform}
+.me-frame{
+  position:absolute;inset:20% 0 0 0;border-radius:28px;border:1px solid var(--line);overflow:hidden;
+  background:
+    radial-gradient(70% 55% at 50% 100%,rgba(var(--glow-rgb),.18),transparent 70%),
+    linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px) 0 0/40px 40px,
+    linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px) 0 0/40px 40px,
+    var(--ink-950);
+}
+.me-glow{position:absolute;left:18%;right:18%;top:18%;bottom:12%;border-radius:50%;
+  background:radial-gradient(circle,rgba(var(--glow-rgb),.38),transparent 65%);filter:blur(40px);transform:translateZ(-90px)}
+.me-img{
+  position:absolute;left:50%;bottom:0;height:99%;width:auto;max-width:none;pointer-events:none;user-select:none;
+  transform:translateX(-50%) translateZ(60px);
+  -webkit-mask-image:linear-gradient(to bottom,#000 76%,transparent 99%);mask-image:linear-gradient(to bottom,#000 76%,transparent 99%);
+  filter:drop-shadow(0 0 1.5px rgba(var(--glow-rgb),.55)) drop-shadow(0 30px 40px rgba(0,0,0,.6));
+}
+.me-hit{position:absolute;inset:0;z-index:5;border:0;background:none;cursor:pointer;border-radius:28px}
+.me-hit:focus-visible{outline:2px solid var(--accent);outline-offset:6px}
+.me-hint{position:absolute;left:50%;bottom:-36px;transform:translateX(-50%);white-space:nowrap}
+.album{
+  position:absolute;left:50%;bottom:7%;z-index:1;width:min(90%,380px);
+  display:grid;grid-template-columns:80px 1fr;gap:16px;align-items:center;padding:16px;border-radius:22px;
+  opacity:0;visibility:hidden
+}
+.album.liquid{background:linear-gradient(135deg,rgba(255,255,255,.16),rgba(255,255,255,.04)),rgba(10,10,10,.62)}
+.album img{width:80px;height:80px;border-radius:12px;box-shadow:0 10px 24px rgba(0,0,0,.5)}
+.album .micro{display:block;margin-bottom:6px}
+.album b{display:block;font-family:var(--f-display);font-weight:700;font-size:16px;line-height:1.2;color:var(--text-100)}
+.album .sub{display:block;font-size:13px;color:var(--text-300);margin-top:2px}
+.album .listen{
+  display:inline-flex;align-items:center;gap:6px;margin-top:10px;height:32px;padding:0 14px;border-radius:999px;
+  background:var(--accent);color:var(--on-accent);font-family:var(--f-display);font-weight:700;font-size:10px;letter-spacing:.06em;text-transform:uppercase
+}
+.album .listen:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+@media (max-width:860px){
+  .team-grid{grid-template-columns:1fr;gap:72px}
+  .me{width:min(100%,420px)}
+}
 
 /* ---------- CTA ---------- */
 .cta{padding:clamp(96px,12vw,140px) 0}
@@ -317,8 +510,10 @@ footer{border-top:1px solid var(--line);padding:48px 0 32px}
   .proof-row div:nth-child(3){border-right:0}
   .proof-row div:nth-child(-n+3){border-bottom:1px solid var(--line)}
 }
-@media (max-width:860px){
+@media (max-width:980px){
   .nav-links{display:none}
+}
+@media (max-width:860px){
   .hero-top{flex-direction:column;gap:8px}
   .hero-bottom{grid-template-columns:1fr}
   .scroll-hint{display:none}
@@ -366,6 +561,7 @@ footer{border-top:1px solid var(--line);padding:48px 0 32px}
     <a href="#results">Подход</a>
     <a href="#services">Услуги</a>
     <a href="#process">Как работаем</a>
+    <a href="#team">Команда</a>
     <a href="#contact">Контакты</a>
   </nav>
   <a href="#contact" class="btn btn-ghost btn-sm"><span class="lbl">Оставить заявку</span><span class="arr" aria-hidden="true">→</span></a>
@@ -459,6 +655,75 @@ footer{border-top:1px solid var(--line);padding:48px 0 32px}
     </div>
   </section>
 
+  <!-- FILM -->
+  <section class="sec hair-top" id="film-sec">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <span class="micro reveal">[ ролик · 35 секунд ]</span>
+          <h2 class="display reveal" style="margin-top:20px">Как <span class="accent">работает</span> система</h2>
+        </div>
+        <p class="reveal">Коротко о том, чем мы занимаемся и почему продвижение должно быть системой, а не набором разовых запусков.</p>
+      </div>
+
+      <div class="film reveal" id="film" data-state="idle" role="region" aria-label="Ролик о СИГНУМ с субтитрами">
+        <i class="blob b1" aria-hidden="true"></i><i class="blob b2" aria-hidden="true"></i><i class="blob b3" aria-hidden="true"></i>
+
+        <div class="scene s1" aria-hidden="true">
+          <div class="logo-big">СИГНУМ</div>
+          <p class="s1-line"><span>Реклама есть у всех.</span><span class="accent">Система — у единиц.</span></p>
+        </div>
+
+        <div class="mac" aria-hidden="true">
+          <div class="mac-bar"><i></i><i></i><i></i><div class="mac-url">ваш-бизнес.ru</div></div>
+          <div class="mac-body">
+            <div class="mac-site"><b></b><b class="short"></b><b></b><div class="mac-hero"></div></div>
+            <div class="mac-stats">
+              <span class="micro">заявки за месяц</span>
+              <div class="mac-count"><span id="filmCount">0</span></div>
+              <svg class="mac-chart" viewBox="0 0 200 60" preserveAspectRatio="none"><path class="flat" d="M0 54 L200 54"/><path class="grow" d="M0 56 C40 54 70 50 100 40 S160 16 200 4"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-cards" aria-hidden="true">
+          <div class="lg liquid"><span class="micro">01</span><b>Стратегия</b></div>
+          <div class="lg liquid"><span class="micro">02</span><b>Креативы</b></div>
+          <div class="lg liquid"><span class="micro">03</span><b>Экспертный контент</b></div>
+          <div class="lg liquid acc"><span class="micro">04</span><b>Нейросети</b></div>
+        </div>
+
+        <div class="notes" aria-hidden="true">
+          <div class="note liquid"><i class="note-ico">С</i><div><b>Новая заявка</b><span>из Telegram</span></div><time>сейчас</time></div>
+          <div class="note liquid"><i class="note-ico">С</i><div><b>Новая заявка</b><span>из ВКонтакте</span></div><time>2 мин</time></div>
+          <div class="note liquid"><i class="note-ico">С</i><div><b>Новый клиент</b><span>после экспертной статьи</span></div><time>5 мин</time></div>
+        </div>
+
+        <div class="scene s5">
+          <div class="logo-big" aria-hidden="true">СИГНУМ</div>
+          <p>Продвижение как система</p>
+          <a href="#contact" class="btn btn-primary" tabindex="-1">Оставить заявку <span class="arr" aria-hidden="true">→</span></a>
+        </div>
+
+        <p class="film-sub" aria-live="polite"></p>
+
+        <div class="film-ui">
+          <div class="film-title">Продвижение<br>как система</div>
+          <button type="button" class="film-play" aria-label="Смотреть ролик"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z" fill="currentColor"/></svg></button>
+          <span class="film-hint micro">смотреть · 35 сек · с субтитрами</span>
+        </div>
+
+        <div class="film-ctrl">
+          <button type="button" data-act="toggle" aria-label="Пауза">
+            <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h4v16H6zM14 4h4v16h-4z" fill="currentColor"/></svg>
+            <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z" fill="currentColor"/></svg>
+          </button>
+          <div class="film-prog" aria-hidden="true"><i></i></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- SERVICES -->
   <section class="sec hair-top" id="services">
     <div class="wrap">
@@ -530,6 +795,44 @@ footer{border-top:1px solid var(--line);padding:48px 0 32px}
     </div>
   </section>
 
+  <!-- TEAM -->
+  <section class="sec hair-top" id="team">
+    <div class="wrap team-grid">
+      <div class="team-info">
+        <span class="micro reveal">[ команда ]</span>
+        <h2 class="display reveal">Кто <span class="accent">строит</span> систему</h2>
+        <p class="team-name reveal">Михаил</p>
+        <p class="team-role reveal">Основатель СИГНУМ · дизайн и вайб-кодинг</p>
+        <p class="team-bio reveal">Пять лет в разных направлениях дизайна. Последние два с половиной года собираю сайты и продукты вместе с нейросетями: вайб-кодинг, закрытые промпты и быстрые запуски без потери качества.</p>
+        <div class="team-stats reveal">
+          <div><b>5<small>лет</small></b><p>в разных видах дизайна</p></div>
+          <div><b>2,5<small>года</small></b><p>в нейросетях и создании сайтов с их помощью</p></div>
+        </div>
+        <div class="team-tags reveal"><span>дизайн</span><span>вайб-кодинг</span><span>нейросети</span><span>сайты</span></div>
+      </div>
+
+      <div class="me reveal" id="me">
+        <div class="me-card">
+          <div class="me-glow" aria-hidden="true"></div>
+          <div class="me-frame" aria-hidden="true"></div>
+          <img class="me-img" src="team/me.webp" alt="Михаил, основатель СИГНУМ" width="1287" height="1400" loading="lazy">
+        </div>
+        <button type="button" class="me-hit" aria-expanded="false" aria-controls="album" aria-label="Показать любимый альбом"></button>
+        <div class="album liquid" id="album">
+          <img src="team/album.webp" alt="Обложка альбома Master of Puppets" width="155" height="155" loading="lazy">
+          <div>
+            <span class="micro">[ любимый альбом ]</span>
+            <b>Master of Puppets</b>
+            <span class="sub">Metallica · Remastered</span>
+            <span class="sub">Альбом · Метал · 1986</span>
+            <a class="listen" href="https://music.yandex.ru/search?text=Metallica%20Master%20of%20Puppets" target="_blank" rel="noopener" tabindex="-1">▶ Слушать</a>
+          </div>
+        </div>
+        <span class="micro me-hint" aria-hidden="true">[ нажмите на фото ]</span>
+      </div>
+    </div>
+  </section>
+
   <!-- CTA -->
   <section class="cta hair-top" id="contact">
     <div class="wrap cta-grid">
@@ -592,6 +895,210 @@ footer{border-top:1px solid var(--line);padding:48px 0 32px}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+// ---------- HERO: при наведении надпись слегка растягивается в ширину, не выходя за колонку ----------
+(function(){
+  const h1 = document.querySelector('.hero h1');
+  if (!h1) return;
+  const lines = [...h1.querySelectorAll('.line')];
+  const MAX = 1.08, DUR = 650, BLUR = 7; // +8% максимум, длительность, сила motion blur (пик ≈ 5px)
+  // горизонтальный motion blur: размытие только по X, сила зависит от скорости растяжения
+  document.body.insertAdjacentHTML('beforeend',
+    '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="hblur" x="-10%" y="-20%" width="120%" height="140%">'
+    + '<feGaussianBlur id="hblurStd" stdDeviation="0 0"/></filter></svg>');
+  const std = document.getElementById('hblurStd');
+  const cur = lines.map(() => 1);
+  let from = [], to = [], t0 = 0, raf = 0;
+  const ease = p => p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;   // easeInOutCubic
+  const speed = p => p < .5 ? 12 * p * p : 3 * Math.pow(-2 * p + 2, 2) / 2;     // её производная
+  const tick = now => {
+    const p = Math.min(1, (now - t0) / DUR);
+    let v = 0;
+    lines.forEach((line, i) => {
+      cur[i] = from[i] + (to[i] - from[i]) * ease(p);
+      v = Math.max(v, Math.abs(to[i] - from[i]) * speed(p));
+      line.style.transform = cur[i] > 1.0005 ? 'scaleX(' + cur[i].toFixed(4) + ')' : '';
+    });
+    const b = Math.min(BLUR, v * BLUR * 6);
+    std.setAttribute('stdDeviation', b.toFixed(2) + ' 0');
+    lines.forEach(line => line.style.filter = b > .15 ? 'url(#hblur)' : '');
+    raf = p < 1 ? requestAnimationFrame(tick) : 0;
+  };
+  const stretch = on => {
+    from = cur.slice();
+    to = lines.map(line => {
+      const text = line.firstElementChild.offsetWidth; // ширина без учёта transform
+      return on ? Math.max(1, Math.min(MAX, line.clientWidth / (text || 1))) : 1;
+    });
+    t0 = performance.now();
+    if (!raf) raf = requestAnimationFrame(tick);
+  };
+  let touchTimer;
+  h1.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') stretch(true); });
+  h1.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') stretch(false); });
+  h1.addEventListener('touchstart', () => { clearTimeout(touchTimer); stretch(true); }, {passive:true});
+  h1.addEventListener('touchend', () => { touchTimer = setTimeout(() => stretch(false), 700); });
+})();
+
+// ---------- TEAM: вырезанное фото в 3D, по клику поворот с motion blur и плашка альбома ----------
+(function(){
+  const me = document.getElementById('me');
+  if (!me || !window.gsap) return;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const card = me.querySelector('.me-card'), img = me.querySelector('.me-img');
+  const hit = me.querySelector('.me-hit'), album = me.querySelector('.album'), listen = album.querySelector('.listen');
+  document.body.insertAdjacentHTML('beforeend',
+    '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="meblur" x="-10%" y="-5%" width="120%" height="110%">'
+    + '<feGaussianBlur id="meblurStd" stdDeviation="0 0"/></filter></svg>');
+  const std = document.getElementById('meblurStd');
+  const SHADOW = 'drop-shadow(0 0 1.5px rgba(255,214,10,.55)) drop-shadow(0 30px 40px rgba(0,0,0,.6))';
+  const blur = {v:0};
+  const setBlur = () => {
+    std.setAttribute('stdDeviation', blur.v.toFixed(2) + ' 0');
+    img.style.filter = blur.v > .1 ? 'url(#meblur) ' + SHADOW : '';
+  };
+
+  gsap.set(album, {xPercent:-50, transformPerspective:900});
+  let rx = 0, ry = 0, turn = 0, open = false;
+  const tilt = (d = .6, ease = 'power3.out') =>
+    gsap.to(card, {rotationY:ry + turn, rotationX:rx, duration:d, ease, overwrite:'auto'});
+
+  // наклон за курсором — фигура, рамка и свет на разной глубине дают объём
+  me.addEventListener('pointermove', e => {
+    if (e.pointerType !== 'mouse') return;
+    const r = me.getBoundingClientRect();
+    ry = ((e.clientX - r.left) / r.width - .5) * 18;
+    rx = -((e.clientY - r.top) / r.height - .5) * 10;
+    tilt();
+  });
+  me.addEventListener('pointerleave', () => { rx = ry = 0; tilt(.9); });
+  if (!reduce) gsap.to(card, {y:-8, duration:3, ease:'sine.inOut', yoyo:true, repeat:-1});
+
+  hit.addEventListener('click', () => {
+    open = !open;
+    hit.setAttribute('aria-expanded', open);
+    hit.setAttribute('aria-label', open ? 'Скрыть любимый альбом' : 'Показать любимый альбом');
+    listen.tabIndex = open ? 0 : -1;
+    turn = open ? -16 : 0;
+    tilt(.8, 'back.out(1.6)');
+    gsap.timeline()
+      .to(blur, {v:9, duration:.16, ease:'power2.in', onUpdate:setBlur})
+      .to(blur, {v:0, duration:.5, ease:'power2.out', onUpdate:setBlur});
+    if (open){
+      // плашка выезжает из-под фигуры: сначала позади неё, потом поверх
+      gsap.timeline()
+        .set(album, {zIndex:1})
+        .fromTo(album, {autoAlpha:0, y:-120, scale:.7, rotationX:40, filter:'blur(10px)'},
+                       {autoAlpha:1, y:0, scale:1, rotationX:0, filter:'blur(0px)', duration:.75, ease:'back.out(1.5)'}, .1)
+        .set(album, {zIndex:6}, .35);
+    } else {
+      gsap.to(album, {autoAlpha:0, y:-60, scale:.85, filter:'blur(8px)', duration:.35, ease:'power2.in'});
+    }
+  });
+})();
+
+// ---------- FILM: моушен-ролик с субтитрами ----------
+(function(){
+  const film = document.getElementById('film');
+  if (!film || !window.gsap) return;
+  const LINES = [
+    'Реклама есть у всех. Система — у единиц.',
+    'Можно запускать объявления, писать посты и ждать. А можно выстроить систему.',
+    'Стратегия, креативы, экспертный контент и нейросети на закрытых промптах — в одной связке.',
+    'Каждый канал усиливает другой, и заявки приходят каждый месяц.',
+    'СИГНУМ. Продвижение как система.'
+  ];
+  const DUR = [5.2, 7.6, 8.6, 6.2, 4.6]; // сколько секунд держится каждая сцена и её субтитр
+  const GAP = .45;
+  const $ = s => film.querySelector(s), $$ = s => [...film.querySelectorAll(s)];
+  const sub = $('.film-sub'), prog = $('.film-prog i'), countEl = $('#filmCount'), countBox = $('.mac-count');
+  const stats = $('.mac-stats'), grow = $('.mac-chart .grow'), flat = $('.mac-chart .flat'), s5 = $('.s5');
+  const toggleBtn = $('[data-act="toggle"]');
+  const glen = grow.getTotalLength();
+  let tl = null;
+
+  const setState = s => { film.dataset.state = s; toggleBtn.setAttribute('aria-label', s === 'paused' ? 'Продолжить' : 'Пауза'); };
+  const say = i => { sub.textContent = LINES[i]; };
+
+  const reset = () => {
+    gsap.set($$('.scene, .lg, .note, .film-sub'), {autoAlpha:0, clearProps:'transform,filter'});
+    gsap.set('.mac', {autoAlpha:0, xPercent:-50, yPercent:-50, scale:1, filter:'blur(0px)', transformPerspective:1200});
+    gsap.set($$('.mac-site > *'), {autoAlpha:0, x:-20});
+    gsap.set(grow, {strokeDasharray:glen, strokeDashoffset:glen});
+    gsap.set(flat, {autoAlpha:1});
+    countEl.textContent = '0'; countBox.classList.remove('hot'); stats.classList.remove('on');
+    s5.classList.remove('live'); s5.querySelector('a').tabIndex = -1;
+    prog.style.width = '0%';
+  };
+
+  const build = d => {
+    const T = []; let t = .3;
+    d.forEach((v, i) => { T[i] = t; t += v + GAP; });
+    const end = t + .4;
+    const x = gsap.timeline({paused:true, onUpdate:() => prog.style.width = (x.progress() * 100) + '%', onComplete:finish});
+    const subOn = i => { x.call(say, [i], T[i]).to(sub, {autoAlpha:1, duration:.3}, T[i]).to(sub, {autoAlpha:0, duration:.3}, T[i] + d[i] + .05); };
+
+    // 1. Логотип разгорается, две строки
+    subOn(0);
+    x.to('.film .blob', {scale:1.2, duration:2.5, ease:'sine.inOut', stagger:.2}, T[0])
+     .fromTo('.s1', {autoAlpha:0}, {autoAlpha:1, duration:.3}, T[0])
+     .fromTo('.s1 .logo-big', {scale:.9, filter:'blur(20px)', autoAlpha:0}, {scale:1, filter:'blur(0px)', autoAlpha:1, duration:1.4, ease:'power3.out'}, T[0])
+     .fromTo('.s1-line span', {y:30, autoAlpha:0}, {y:0, autoAlpha:1, duration:.8, stagger:d[0] * .35, ease:'power3.out'}, T[0] + .9)
+     .to('.s1', {autoAlpha:0, scale:1.06, filter:'blur(12px)', duration:.6, ease:'power2.in'}, T[1] - .6);
+
+    // 2. Окно браузера macOS: сайт есть, заявок ноль
+    subOn(1);
+    x.fromTo('.mac', {autoAlpha:0, yPercent:-36, rotationX:18, scale:.92, filter:'blur(10px)'},
+                     {autoAlpha:1, yPercent:-50, rotationX:0, scale:1, filter:'blur(0px)', duration:1.2, ease:'power3.out'}, T[1])
+     .to($$('.mac-site > *'), {autoAlpha:1, x:0, duration:.5, stagger:.15, ease:'power2.out'}, T[1] + .8)
+     .call(() => stats.classList.add('on'), null, T[1] + d[1] * .6);
+
+    // 3. Карточки из жидкого стекла поверх размытого окна
+    subOn(2);
+    x.to('.mac', {scale:.94, filter:'blur(6px)', autoAlpha:.55, duration:.8}, T[2])
+     .fromTo($$('.lg'), {autoAlpha:0, y:60, rotationY:-25, scale:.9},
+                        {autoAlpha:1, y:0, rotationY:0, scale:1, duration:.9, ease:'power3.out', stagger:d[2] * .14}, T[2] + .2)
+     .to($$('.lg'), {autoAlpha:0, y:-40, scale:.92, duration:.5, stagger:.06, ease:'power2.in'}, T[3] - .55)
+     .to('.mac', {scale:1, filter:'blur(0px)', autoAlpha:1, duration:.6}, T[3] - .3);
+
+    // 4. Уведомления как на iPhone, счётчик и график растут
+    subOn(3);
+    const cnt = {v:0};
+    x.fromTo($$('.note'), {autoAlpha:0, y:-30, scale:.95, filter:'blur(8px)'},
+                          {autoAlpha:1, y:0, scale:1, filter:'blur(0px)', duration:.6, ease:'back.out(1.4)', stagger:d[3] * .22}, T[3] + .2)
+     .call(() => countBox.classList.add('hot'), null, T[3] + .3)
+     .to(cnt, {v:48, duration:d[3] * .8, ease:'power2.out', onUpdate:() => countEl.textContent = Math.round(cnt.v)}, T[3] + .3)
+     .to(grow, {strokeDashoffset:0, duration:d[3] * .8, ease:'power2.out'}, T[3] + .3)
+     .to(flat, {autoAlpha:0, duration:.6}, T[3] + .3);
+
+    // 5. Всё собирается в логотип и кнопку
+    subOn(4);
+    x.to(['.mac', ...$$('.note')], {autoAlpha:0, scale:.9, filter:'blur(14px)', duration:.7, ease:'power2.in'}, T[4] - .2)
+     .fromTo('.s5', {autoAlpha:0}, {autoAlpha:1, duration:.3}, T[4] + .3)
+     .fromTo('.s5 .logo-big', {scale:.9, filter:'blur(20px)', autoAlpha:0}, {scale:1, filter:'blur(0px)', autoAlpha:1, duration:1.2, ease:'power3.out'}, T[4] + .3)
+     .fromTo(['.s5 p', '.s5 .btn'], {y:24, autoAlpha:0}, {y:0, autoAlpha:1, duration:.7, stagger:.35, ease:'power3.out'}, T[4] + 1)
+     .call(() => { s5.classList.add('live'); s5.querySelector('a').tabIndex = 0; }, null, T[4] + 1.4)
+     .to({}, {duration:.01}, end);
+    return x;
+  };
+
+  function finish(){ setState('ended'); }
+
+  const start = () => {
+    if (!tl) tl = build(DUR);
+    reset(); setState('playing'); tl.restart();
+  };
+  const pause = () => { if (film.dataset.state !== 'playing') return; tl.pause(); setState('paused'); };
+  const resume = () => { tl.resume(); setState('playing'); };
+
+  $('.film-play').addEventListener('click', start);
+  toggleBtn.addEventListener('click', () => film.dataset.state === 'playing' ? pause() : resume());
+  // ролик ставится на паузу, когда уходит с экрана
+  new IntersectionObserver(([e]) => { if (!e.isIntersecting) pause(); }, {threshold:.25}).observe(film);
+  reset();
+})();
+</script>
+
 <script type="importmap">
 {"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}
 </script>
